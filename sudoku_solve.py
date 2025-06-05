@@ -56,8 +56,7 @@ def get_user_input():
             except ValueError:
                 print("Invalid row. Enter exactly 9 numbers between 0 and 9 separated by spaces.")
     return grid
-
-# Main Loop
+    
 if __name__ == "__main__":
     while True:
         sudoku_grid = get_user_input()
@@ -67,7 +66,6 @@ if __name__ == "__main__":
         else:
             print("No solution exists for the given Sudoku puzzle.")
 
-        # Ask to continue
         choice = input("\nDo you want to solve another Sudoku? (yes/no): ").strip().lower()
         if choice not in ('yes', 'y'):
             print("Exiting the program.")
