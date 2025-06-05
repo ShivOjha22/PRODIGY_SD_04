@@ -1,72 +1,89 @@
-def print_grid(grid):
+def print_grid(grid, box_size):
+    size = len(grid)
     print("\nSolved Sudoku:")
-    for i, row in enumerate(grid):
-        if i % 3 == 0 and i != 0:
-            print("-" * 21)
-        for j, num in enumerate(row):
-            if j % 3 == 0 and j != 0:
+    for i in range(size):
+        if i % box_size == 0 and i != 0:
+            print("-" * (size * 2 + box_size - 1))
+        for j in range(size):
+            if j % box_size == 0 and j != 0:
                 print("|", end=" ")
-            print(num if num != 0 else ".", end=" ")
+            print(grid[i][j] if grid[i][j] != 0 else ".", end=" ")
         print()
 
-def find_empty(grid):
-    for i in range(9):
-        for j in range(9):
-            if grid[i][j] == 0:
-                return i, j
-    return None
-
-def is_valid(grid, num, pos):
-    row, col = pos
+def is_valid(grid, row, col, num, box_size):
+    size = len(grid)
     if num in grid[row]:
         return False
-    if num in [grid[i][col] for i in range(9)]:
+    if num in [grid[i][col] for i in range(size)]:
         return False
-    box_x, box_y = col // 3, row // 3
-    for i in range(box_y * 3, box_y * 3 + 3):
-        for j in range(box_x * 3, box_x * 3 + 3):
+
+    start_row = (row // box_size) * box_size
+    start_col = (col // box_size) * box_size
+    for i in range(start_row, start_row + box_size):
+        for j in range(start_col, start_col + box_size):
             if grid[i][j] == num:
                 return False
     return True
 
-def solve_sudoku(grid):
-    find = find_empty(grid)
-    if not find:
-        return True
-    row, col = find
-    for num in range(1, 10):
-        if is_valid(grid, num, (row, col)):
-            grid[row][col] = num
-            if solve_sudoku(grid):
-                return True
-            grid[row][col] = 0
-    return False
+def solve(grid, box_size):
+    size = len(grid)
+    for row in range(size):
+        for col in range(size):
+            if grid[row][col] == 0:
+                for num in range(1, size + 1):
+                    if is_valid(grid, row, col, num, box_size):
+                        grid[row][col] = num
+                        if solve(grid, box_size):
+                            return True
+                        grid[row][col] = 0
+                return False
+    return True
 
-def get_user_input():
-    print("\nEnter your Sudoku puzzle (row-by-row, use 0 for empty cells):")
+def get_user_grid(size):
+    print(f"\nEnter your Sudoku puzzle row by row (use 0 for empty cells):")
     grid = []
-    for i in range(9):
+    for i in range(size):
         while True:
             try:
                 row = list(map(int, input(f"Row {i+1}: ").strip().split()))
-                if len(row) != 9 or any(num < 0 or num > 9 for num in row):
+                if len(row) != size or any(n < 0 or n > size for n in row):
                     raise ValueError
                 grid.append(row)
                 break
             except ValueError:
-                print("Invalid row. Enter exactly 9 numbers between 0 and 9 separated by spaces.")
+                print(f"Invalid input. Please enter exactly {size} numbers (0 to {size}) separated by spaces.")
     return grid
-    
-if __name__ == "__main__":
-    while True:
-        sudoku_grid = get_user_input()
-        print("\nSolving...")
-        if solve_sudoku(sudoku_grid):
-            print_grid(sudoku_grid)
-        else:
-            print("No solution exists for the given Sudoku puzzle.")
 
-        choice = input("\nDo you want to solve another Sudoku? (yes/no): ").strip().lower()
-        if choice not in ('yes', 'y'):
-            print("Exiting the program.")
+def main():
+    while True:
+        print("\n Sudoku Solver")
+        print("Choose grid size:")
+        print("1. 4x4")
+        print("2. 9x9")
+        choice = input("Enter 1 or 2: ").strip()
+
+        if choice == "1":
+            size = 4
+            box_size = 2
+        elif choice == "2":
+            size = 9
+            box_size = 3
+        else:
+            print("Invalid choice. Try again.")
+            continue
+
+        grid = get_user_grid(size)
+
+        print("\nSolving...")
+        if solve(grid, box_size):
+            print_grid(grid, box_size)
+        else:
+            print("No solution found.")
+
+        again = input("\nDo you want to solve another puzzle? (yes/no): ").strip().lower()
+        if again not in ["yes", "y"]:
+            print("Goodbye!")
             break
+
+if __name__ == "__main__":
+    main()
